@@ -51,6 +51,8 @@
     .walk-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.walk-note{margin-top:9px;color:var(--muted);font-size:.84rem}
     .stretch-card{padding:16px}.stretch-card h2{margin:0 0 10px;font-size:1.05rem}.stretch-grid{display:grid;grid-template-columns:1fr;gap:8px;color:var(--muted);font-size:.93rem}.progress{margin-top:12px;font-size:.9rem;color:var(--muted)}.progress strong{color:var(--text)}
     .history-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.metric{padding:12px;border:1px solid var(--border);border-radius:14px;background:#fff;text-align:center}.metric strong{display:block;font-size:1.25rem}.metric span{font-size:.75rem;color:var(--muted)}
+    .calendar-card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin-bottom:14px}.calendar-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.calendar-title{font-weight:850;font-size:1.05rem}.calendar-nav{width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--text);font-size:1.2rem;font-weight:850}.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.calendar-weekdays div{text-align:center;font-size:.7rem;font-weight:800;color:var(--muted);padding-bottom:4px}.calendar-day{aspect-ratio:1/1;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--text);position:relative;display:grid;place-items:center;padding:0;font-size:.82rem}.calendar-day.muted{color:#b3bdc6}.calendar-day.active-date{background:#edf3f8;border-color:#c6d6e3;font-weight:900}.calendar-day.group-a{background:#e8f0fa;border-color:#aac5e4;color:#174c82}.calendar-day.group-b{background:#e9f3eb;border-color:#aecdb5;color:#245d32}.calendar-day.group-c{background:#f0ebf8;border-color:#c9bae5;color:#5a4090}.calendar-day.walk-only{background:#fff4e8;border-color:#e4c59f;color:#7b4917}.calendar-day.selected{outline:3px solid rgba(23,50,77,.22)}.calendar-day .num{line-height:1}.calendar-day .mark{position:absolute;bottom:3px;right:4px;font-size:.58rem;font-weight:900}.calendar-day .walk-dot{position:absolute;bottom:4px;left:4px;width:5px;height:5px;border-radius:50%;background:var(--walk)}.calendar-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:10px;color:var(--muted);font-size:.72rem}.legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:1px}.legend-a{background:var(--blue)}.legend-b{background:var(--green)}.legend-c{background:var(--purple)}.legend-walk{background:var(--walk)}
+    .selected-day{margin-bottom:14px}.selected-day .history-day{border-width:2px}
     .history-list{display:grid;gap:10px}.history-day{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow)}.history-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.history-date{font-weight:850}.history-group{font-weight:800;font-size:.85rem;padding:4px 8px;border-radius:999px;background:var(--soft)}.history-details{margin-top:8px;color:var(--muted);font-size:.88rem;line-height:1.5}.history-details strong{color:var(--text)}
     .empty{padding:24px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:16px}
     .install-note{margin-top:12px;font-size:.82rem;color:var(--muted)}
@@ -108,6 +110,17 @@
 
   <section id="historyView" class="view">
     <div id="historySummary" class="history-summary"></div>
+    <section class="calendar-card" aria-label="Workout calendar">
+      <div class="calendar-head">
+        <button id="prevMonth" class="calendar-nav" aria-label="Previous month">‹</button>
+        <div id="calendarTitle" class="calendar-title"></div>
+        <button id="nextMonth" class="calendar-nav" aria-label="Next month">›</button>
+      </div>
+      <div class="calendar-weekdays" aria-hidden="true"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+      <div class="calendar-legend"><span><i class="legend-dot legend-a"></i>Group A</span><span><i class="legend-dot legend-b"></i>Group B</span><span><i class="legend-dot legend-c"></i>Group C</span><span><i class="legend-dot legend-walk"></i>Walk</span></div>
+    </section>
+    <div id="selectedDay" class="selected-day"></div>
     <div id="historyList" class="history-list"></div>
   </section>
 </main>
@@ -146,6 +159,8 @@ function loadState(){
  return s;
 }
 const state=loadState();
+let calendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+let selectedHistoryDate=null;
 
 function ensureExercise(ex){
  if(!state.exercises[ex.id]) state.exercises[ex.id]={weight:ex.weight,reps:ex.reps,lastWeight:'',lastReps:'',lastChanged:''};
@@ -186,6 +201,44 @@ function renderToday(){
 function recordSnapshot(ex){const d=ensureDay(),x=ensureExercise(ex);d.snapshots[ex.id]={name:ex.name,weight:x.weight,reps:x.reps};if(d.sets[ex.id]?.some(Boolean)){x.lastWeight=x.weight;x.lastReps=x.reps;x.lastChanged=today;}}
 function updateProgress(){const g=groups[state.selectedGroup],d=ensureDay();const done=g.exercises.reduce((n,ex)=>n+ensureDayExercise(ex).filter(Boolean).length,0);const walk=d.walkDone?' · walk ✓':'';const el=document.getElementById('progress');if(el)el.innerHTML=`<strong>${done}/9 sets complete</strong> for Group ${state.selectedGroup}${walk}.`;}
 
+function dayActivity(date){
+ const d=state.days[date];
+ if(!d)return{workout:false,walk:false,setCount:0,group:''};
+ const setCount=Object.values(d.sets||{}).reduce((n,a)=>n+(Array.isArray(a)?a.filter(Boolean).length:0),0);
+ return{workout:setCount>0,walk:!!d.walkDone,setCount,group:d.group||''};
+}
+function historyCard(date){
+ const d=state.days[date];if(!d)return'';
+ const setCount=Object.values(d.sets||{}).reduce((n,a)=>n+(Array.isArray(a)?a.filter(Boolean).length:0),0);
+ const snaps=Object.values(d.snapshots||{}).filter(Boolean);
+ return `<article class="history-day"><div class="history-head"><div class="history-date">${niceDate(date)}</div><div class="history-group">${setCount?`Group ${esc(d.group||'—')}`:'Walk only'}</div></div><div class="history-details"><strong>${setCount} sets</strong>${d.walkDone?' · Walk ✓':''}${d.walkTime?` · Walk target ${formatTime(d.walkTime)}`:''}${d.walkDuration?` · ${esc(d.walkDuration)}`:''}${snaps.length?'<br>'+snaps.map(s=>`${esc(s.name)}: ${esc(s.weight||'—')} · ${esc(s.reps||'—')}`).join('<br>'):''}</div></article>`;
+}
+function renderCalendar(){
+ const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth();
+ document.getElementById('calendarTitle').textContent=new Date(y,m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
+ const first=new Date(y,m,1),last=new Date(y,m+1,0),start=new Date(y,m,1-first.getDay());
+ const cells=[];
+ for(let i=0;i<42;i++){
+  const d=new Date(start);d.setDate(start.getDate()+i);
+  const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const act=dayActivity(key),inMonth=d.getMonth()===m;
+  let cls='calendar-day'+(inMonth?'':' muted');
+  if(act.workout)cls+=` group-${String(act.group||'').toLowerCase()}`;
+  else if(act.walk)cls+=' walk-only';
+  if(key===today)cls+=' active-date';
+  if(key===selectedHistoryDate)cls+=' selected';
+  const clickable=act.workout||act.walk;
+  cells.push(`<button class="${cls}" data-date="${key}" ${clickable?'':'disabled'} aria-label="${niceDate(key)}${act.workout?`, Group ${esc(act.group)}, ${act.setCount} sets`:''}${act.walk?', walk complete':''}"><span class="num">${d.getDate()}</span>${act.workout?`<span class="mark">${esc(act.group)}</span>`:''}${act.walk?'<span class="walk-dot"></span>':''}</button>`);
+ }
+ const grid=document.getElementById('calendarGrid');grid.innerHTML=cells.join('');
+ grid.querySelectorAll('.calendar-day:not([disabled])').forEach(b=>b.addEventListener('click',()=>{selectedHistoryDate=b.dataset.date;renderCalendar();renderSelectedDay();}));
+}
+function renderSelectedDay(){
+ const el=document.getElementById('selectedDay');
+ if(!selectedHistoryDate||!state.days[selectedHistoryDate]){el.innerHTML='';return;}
+ el.innerHTML=historyCard(selectedHistoryDate);
+}
+
 function renderHistory(){
  const dates=Object.keys(state.days).sort().reverse();
  const activeDays=dates.filter(date=>{const d=state.days[date];return Object.values(d.sets||{}).some(a=>a.some(Boolean))||d.walkDone;});
@@ -193,8 +246,9 @@ function renderHistory(){
  const walks=activeDays.filter(date=>state.days[date].walkDone).length;
  document.getElementById('historySummary').innerHTML=`<div class="metric"><strong>${activeDays.length}</strong><span>active days</span></div><div class="metric"><strong>${completed}</strong><span>9-set days</span></div><div class="metric"><strong>${walks}</strong><span>walks checked</span></div>`;
  const list=document.getElementById('historyList');
- if(!activeDays.length){list.innerHTML='<div class="empty">Your workout and walk history will appear here after you start checking things off.</div>';return;}
- list.innerHTML=activeDays.map(date=>{const d=state.days[date],setCount=Object.values(d.sets||{}).reduce((n,a)=>n+a.filter(Boolean).length,0);const snaps=Object.values(d.snapshots||{}).filter(Boolean);return `<article class="history-day"><div class="history-head"><div class="history-date">${niceDate(date)}</div><div class="history-group">Group ${d.group||'—'}</div></div><div class="history-details"><strong>${setCount} sets</strong>${d.walkDone?' · Walk ✓':''}${d.walkTime?` · Walk target ${formatTime(d.walkTime)}`:''}${d.walkDuration?` · ${esc(d.walkDuration)}`:''}${snaps.length?'<br>'+snaps.map(s=>`${esc(s.name)}: ${esc(s.weight||'—')} · ${esc(s.reps||'—')}`).join('<br>'):''}</div></article>`}).join('');
+ if(!activeDays.length){list.innerHTML='<div class="empty">Your workout and walk history will appear here after you start checking things off.</div>';renderCalendar();renderSelectedDay();return;}
+ list.innerHTML=activeDays.map(historyCard).join('');
+ renderCalendar();renderSelectedDay();
 }
 function formatTime(v){if(!v)return'';const [h,m]=v.split(':').map(Number);return new Date(2000,0,1,h,m).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}
 
@@ -207,6 +261,8 @@ document.getElementById('nextGroup').addEventListener('click',()=>{const order=[
 document.getElementById('walkDone').addEventListener('change',e=>{ensureDay().walkDone=e.target.checked;save();renderHistory();});
 document.getElementById('walkTime').addEventListener('change',e=>{state.walk.time=e.target.value;ensureDay().walkTime=e.target.value;save();renderHistory();});
 document.getElementById('walkDuration').addEventListener('change',e=>{state.walk.duration=e.target.value;ensureDay().walkDuration=e.target.value;save();renderHistory();});
+document.getElementById('prevMonth').addEventListener('click',()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);renderCalendar();});
+document.getElementById('nextMonth').addEventListener('click',()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);renderCalendar();});
 
 if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
 renderToday();renderHistory();save();
