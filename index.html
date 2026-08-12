@@ -4,226 +4,72 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#173b63" />
-  <title>Workday Strength Rotation</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Workday Strength</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon-192.png" />
   <style>
     :root {
-      --bg: #f6f8fb;
-      --card: #ffffff;
-      --text: #16324f;
-      --muted: #667788;
-      --blue: #1f5a99;
-      --green: #2f6f3e;
-      --purple: #6a4fa3;
-      --border: #dbe3ea;
-      --shadow: 0 8px 24px rgba(22, 50, 79, 0.08);
-      --radius: 18px;
+      --bg:#f5f7fa; --card:#fff; --text:#17324d; --muted:#6d7d8c;
+      --blue:#1f5a99; --green:#2f6f3e; --purple:#6a4fa3; --walk:#9a5d20;
+      --border:#dce4eb; --soft:#eef3f7; --success:#276437;
+      --shadow:0 8px 24px rgba(22,50,79,.08); --radius:18px;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    .app {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
-    }
-    header {
-      margin: 8px 0 18px;
-    }
-    h1 {
-      margin: 0;
-      font-size: clamp(1.9rem, 7vw, 3rem);
-      line-height: 0.98;
-      letter-spacing: -0.04em;
-    }
-    .sub {
-      color: var(--muted);
-      margin-top: 8px;
-      font-size: 0.98rem;
-    }
-    .group-picker {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 18px 0;
-    }
-    .group-btn {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 8px;
-      color: white;
-      font-weight: 800;
-      font-size: 1rem;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      opacity: 0.78;
-      transition: transform .15s ease, opacity .15s ease, outline .15s ease;
-    }
-    .group-btn[data-group="A"] { background: var(--blue); }
-    .group-btn[data-group="B"] { background: var(--green); }
-    .group-btn[data-group="C"] { background: var(--purple); }
-    .group-btn.active { opacity: 1; outline: 3px solid rgba(22,50,79,.14); transform: translateY(-1px); }
-
-    .section-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    .section-head {
-      color: white;
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-    }
-    .section-head.a { background: var(--blue); }
-    .section-head.b { background: var(--green); }
-    .section-head.c { background: var(--purple); }
-    .section-title { font-weight: 800; font-size: 1.08rem; }
-    .section-focus { font-size: .86rem; opacity: .9; text-align: right; }
-
-    .exercise {
-      padding: 16px;
-      border-top: 1px solid var(--border);
-    }
-    .exercise:first-of-type { border-top: none; }
-    .exercise h3 {
-      margin: 0 0 12px;
-      font-size: 1.14rem;
-    }
-    .fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    label {
-      display: grid;
-      gap: 5px;
-      font-size: .76rem;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-    input[type="text"] {
-      width: 100%;
-      min-height: 46px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0 12px;
-      font: inherit;
-      color: var(--text);
-      background: #fbfcfe;
-    }
-    .sets {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    .set-check {
-      position: relative;
-    }
-    .set-check input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .set-check span {
-      min-height: 48px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: #fbfcfe;
-      font-weight: 800;
-      cursor: pointer;
-      user-select: none;
-    }
-    .set-check input:checked + span {
-      background: #eaf4ec;
-      border-color: #91bc9a;
-      color: #205d2e;
-    }
-    .set-check input:checked + span::before {
-      content: "✓ ";
-    }
-    .cue {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: .9rem;
-      line-height: 1.35;
-    }
-    .optional {
-      margin: 0 16px 16px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #f2f7f2;
-      color: #31533a;
-      font-size: .9rem;
-      border: 1px dashed #a8c2ad;
-    }
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 16px 0 18px;
-    }
-    button.action {
-      min-height: 48px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: white;
-      color: var(--text);
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-    }
-    button.primary { background: var(--text); color: white; border-color: var(--text); }
-
-    .stretch-card {
-      padding: 16px;
-    }
-    .stretch-card h2 { margin: 0 0 10px; font-size: 1.05rem; }
-    .stretch-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8px;
-      color: var(--muted);
-      font-size: .93rem;
-    }
-    .progress {
-      margin-top: 12px;
-      font-size: .9rem;
-      color: var(--muted);
-    }
-    .progress strong { color: var(--text); }
-    .install-note {
-      margin-top: 12px;
-      font-size: .82rem;
-      color: var(--muted);
-    }
-    @media (min-width: 560px) {
-      .stretch-grid { grid-template-columns: repeat(3, 1fr); }
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+    button,input{font:inherit}
+    .app{max-width:760px;margin:0 auto;padding:16px 16px calc(30px + env(safe-area-inset-bottom))}
+    header{margin:8px 0 14px}
+    h1{margin:0;font-size:clamp(1.9rem,7vw,3rem);line-height:.98;letter-spacing:-.04em}
+    .date-line{margin-top:8px;color:var(--muted);font-size:.95rem}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+    .tab{min-height:44px;border:1px solid var(--border);border-radius:14px;background:#fff;color:var(--text);font-weight:800}
+    .tab.active{background:var(--text);color:#fff;border-color:var(--text)}
+    .view{display:none}.view.active{display:block}
+    .group-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+    .group-btn{border:0;border-radius:16px;padding:14px 8px;color:#fff;font-weight:800;font-size:1rem;box-shadow:var(--shadow);opacity:.72}
+    .group-btn[data-group="A"]{background:var(--blue)} .group-btn[data-group="B"]{background:var(--green)} .group-btn[data-group="C"]{background:var(--purple)}
+    .group-btn.active{opacity:1;outline:3px solid rgba(22,50,79,.14);transform:translateY(-1px)}
+    .section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+    .section-head{color:#fff;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .section-head.a{background:var(--blue)} .section-head.b{background:var(--green)} .section-head.c{background:var(--purple)}
+    .section-title{font-weight:800;font-size:1.08rem}.section-focus{font-size:.86rem;opacity:.9;text-align:right}
+    .exercise{padding:16px;border-top:1px solid var(--border)} .exercise:first-of-type{border-top:0}
+    .exercise h3{margin:0 0 10px;font-size:1.14rem}
+    .last-used{margin:-3px 0 10px;color:var(--muted);font-size:.82rem}
+    .last-used strong{color:var(--text)}
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    label.field{display:grid;gap:5px;font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    input[type="text"],input[type="time"]{width:100%;min-height:46px;border:1px solid var(--border);border-radius:12px;padding:0 12px;color:var(--text);background:#fbfcfe}
+    .sets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.set-check{position:relative}.set-check input{position:absolute;opacity:0;pointer-events:none}
+    .set-check span{min-height:48px;border:1px solid var(--border);border-radius:12px;display:grid;place-items:center;background:#fbfcfe;font-weight:800;user-select:none}
+    .set-check input:checked+span{background:#eaf4ec;border-color:#91bc9a;color:#205d2e}.set-check input:checked+span::before{content:"✓ "}
+    .cue{margin-top:10px;color:var(--muted);font-size:.9rem;line-height:1.35}.optional{margin:0 16px 16px;padding:12px 14px;border-radius:12px;background:#f2f7f2;color:#31533a;font-size:.9rem;border:1px dashed #a8c2ad}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 18px}.action{min-height:48px;border:1px solid var(--border);border-radius:14px;background:#fff;color:var(--text);font-weight:800;box-shadow:var(--shadow)}.primary{background:var(--text);color:#fff;border-color:var(--text)}
+    .walk-card{padding:16px}.walk-top{display:flex;justify-content:space-between;align-items:center;gap:14px}.walk-card h2{margin:0;font-size:1.08rem}.walk-check{position:relative;flex:0 0 auto}.walk-check input{position:absolute;opacity:0}.walk-check span{display:grid;place-items:center;width:48px;height:48px;border:2px solid #d5b590;border-radius:14px;background:#fff9f1;font-size:1.3rem}.walk-check input:checked+span{background:#f1e5d5;border-color:#b17a3f}.walk-check input:checked+span::after{content:"✓";font-weight:900;color:#7b4917}
+    .walk-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.walk-note{margin-top:9px;color:var(--muted);font-size:.84rem}
+    .stretch-card{padding:16px}.stretch-card h2{margin:0 0 10px;font-size:1.05rem}.stretch-grid{display:grid;grid-template-columns:1fr;gap:8px;color:var(--muted);font-size:.93rem}.progress{margin-top:12px;font-size:.9rem;color:var(--muted)}.progress strong{color:var(--text)}
+    .history-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.metric{padding:12px;border:1px solid var(--border);border-radius:14px;background:#fff;text-align:center}.metric strong{display:block;font-size:1.25rem}.metric span{font-size:.75rem;color:var(--muted)}
+    .history-list{display:grid;gap:10px}.history-day{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow)}.history-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.history-date{font-weight:850}.history-group{font-weight:800;font-size:.85rem;padding:4px 8px;border-radius:999px;background:var(--soft)}.history-details{margin-top:8px;color:var(--muted);font-size:.88rem;line-height:1.5}.history-details strong{color:var(--text)}
+    .empty{padding:24px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:16px}
+    .install-note{margin-top:12px;font-size:.82rem;color:var(--muted)}
+    @media(min-width:560px){.stretch-grid{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
 <body>
-  <main class="app">
-    <header>
-      <h1>Workday Strength Rotation</h1>
-      <div class="sub">Pick one group for the day. Do each exercise 3 times throughout your workday.</div>
-    </header>
+<main class="app">
+  <header>
+    <h1>Workday Strength</h1>
+    <div class="date-line" id="dateLine"></div>
+  </header>
 
+  <div class="tabs">
+    <button class="tab active" data-view="today">Today</button>
+    <button class="tab" data-view="history">History</button>
+  </div>
+
+  <section id="todayView" class="view active">
     <div class="group-picker" aria-label="Choose workout group">
       <button class="group-btn active" data-group="A">Group A</button>
       <button class="group-btn" data-group="B">Group B</button>
@@ -237,6 +83,17 @@
       <button id="nextGroup" class="action primary">Next group</button>
     </div>
 
+    <section class="section-card walk-card">
+      <div class="walk-top">
+        <div><h2>Daily walk</h2><div class="walk-note">Your walk checkoff is saved with today's history.</div></div>
+        <label class="walk-check" aria-label="Daily walk complete"><input id="walkDone" type="checkbox"><span></span></label>
+      </div>
+      <div class="walk-fields">
+        <label class="field">Target time<input id="walkTime" type="time"></label>
+        <label class="field">Duration<input id="walkDuration" type="text" inputmode="numeric" placeholder="20 min"></label>
+      </div>
+    </section>
+
     <section class="section-card stretch-card">
       <h2>Stretch throughout the day</h2>
       <div class="stretch-grid">
@@ -245,140 +102,114 @@
         <div><strong>Neck stretch</strong><br>20–30 sec each side</div>
       </div>
       <div id="progress" class="progress"></div>
-      <div class="install-note">Your weights, reps and checkmarks are saved on this device.</div>
+      <div class="install-note">Weights and reps carry forward. Sets and walk status are stored by date.</div>
     </section>
-  </main>
+  </section>
 
-  <script>
-    const groups = {
-      A: {
-        focus: 'Full body strength',
-        className: 'a',
-        exercises: [
-          { id: 'squat_press', name: 'Squat → Overhead Press', weight: '15 lb each', reps: '10 reps', cue: 'Hold at shoulder height, squat, then press overhead as you stand.' },
-          { id: 'row', name: 'Bent-Over Row', weight: '20 lb each', reps: '10 reps', cue: 'Hinge at the hips and pull the dumbbells toward your hips with a flat back.' },
-          { id: 'farmer', name: "Farmer's Carry", weight: '25 lb each', reps: '1 minute', cue: 'Stand tall, brace your core and walk at a comfortable pace.' }
-        ]
-      },
-      B: {
-        focus: 'Hinge, posture & core',
-        className: 'b',
-        optional: 'Optional: replace the regular RDL with a single-leg RDL on some days (about 8 reps each leg).',
-        exercises: [
-          { id: 'rdl', name: 'Romanian Deadlift (RDL)', weight: '35 lb', reps: '15 reps', cue: 'Push your hips back, keep your back flat, then squeeze your glutes to stand.' },
-          { id: 'face_pull', name: 'Face Pull', weight: '20 lb', reps: '10 reps', cue: 'Pull toward your face, lead with your elbows and squeeze your shoulder blades together.' },
-          { id: 'pallof', name: 'Pallof Press', weight: '', reps: '10 reps each side', cue: 'Press straight out and resist rotation. Keep your ribs and hips square.' }
-        ]
-      },
-      C: {
-        focus: 'Lateral strength & stability',
-        className: 'c',
-        exercises: [
-          { id: 'lateral_lunge', name: 'Lateral Lunge', weight: 'Bodyweight', reps: '10 reps each side', cue: 'Step wide, sit back into one hip and keep the other leg relatively straight.' },
-          { id: 'monster_walk', name: 'Monster Walk', weight: 'Resistance band', reps: '10–15 steps each direction', cue: 'Keep tension on the band and take controlled side steps with knees softly bent.' },
-          { id: 'suitcase', name: 'Suitcase Carry', weight: '30 lb', reps: '1 minute each side', cue: 'Hold one weight at your side and walk without leaning.' }
-        ]
-      }
-    };
+  <section id="historyView" class="view">
+    <div id="historySummary" class="history-summary"></div>
+    <div id="historyList" class="history-list"></div>
+  </section>
+</main>
 
-    const STORAGE_KEY = 'workday-strength-pwa-v1';
-    const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    state.selectedGroup = state.selectedGroup || 'A';
-    state.exercises = state.exercises || {};
+<script>
+const groups={
+ A:{focus:'Full body strength',className:'a',exercises:[
+  {id:'squat_press',name:'Squat → Overhead Press',weight:'15 lb each',reps:'10 reps',cue:'Hold at shoulder height, squat, then press overhead as you stand.'},
+  {id:'row',name:'Bent-Over Row',weight:'20 lb each',reps:'15 reps',cue:'Hinge at the hips and pull the dumbbells toward your hips with a flat back.'},
+  {id:'farmer',name:"Farmer's Carry",weight:'30 lb each',reps:'1 minute',cue:'Stand tall, brace your core and walk at a comfortable pace.'}
+ ]},
+ B:{focus:'Hinge, posture & core',className:'b',optional:'Optional variation: replace the regular RDL with a single-leg RDL on some days (about 8 reps each leg).',exercises:[
+  {id:'rdl',name:'Romanian Deadlift (RDL)',weight:'35 lb',reps:'15 reps',cue:'Push your hips back, keep your back flat, then squeeze your glutes to stand.'},
+  {id:'face_pull',name:'Face Pull',weight:'20 lb',reps:'10 reps',cue:'Pull toward your face, lead with your elbows and squeeze your shoulder blades together.'},
+  {id:'pallof',name:'Pallof Press',weight:'',reps:'10 reps each side',cue:'Press straight out and resist rotation. Keep your ribs and hips square.'}
+ ]},
+ C:{focus:'Lateral strength & stability',className:'c',exercises:[
+  {id:'lateral_lunge',name:'Lateral Lunge',weight:'Bodyweight',reps:'10 reps each side',cue:'Step wide, sit back into one hip and keep the other leg relatively straight.'},
+  {id:'monster_walk',name:'Monster Walk',weight:'Resistance band',reps:'10–15 steps each direction',cue:'Keep tension on the band and take controlled side steps with knees softly bent.'},
+  {id:'suitcase',name:'Suitcase Carry',weight:'30 lb',reps:'1 minute each side',cue:'Hold one weight at your side and walk without leaning.'}
+ ]}
+};
 
-    function ensureExercise(ex) {
-      if (!state.exercises[ex.id]) {
-        state.exercises[ex.id] = { weight: ex.weight, reps: ex.reps, sets: [false, false, false] };
-      }
-      return state.exercises[ex.id];
-    }
+const KEY='workday-strength-pwa-v2';
+const OLD_KEY='workday-strength-pwa-v1';
+const isoDate=()=>new Date().toLocaleDateString('en-CA');
+const today=isoDate();
 
-    function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      updateProgress();
-    }
+function loadState(){
+ let s={version:2,selectedGroup:'A',exercises:{},days:{},walk:{time:'',duration:'20 min'}};
+ try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved) s={...s,...saved,exercises:saved.exercises||{},days:saved.days||{},walk:{...s.walk,...(saved.walk||{})}}}catch(e){}
+ if(!localStorage.getItem(KEY)){
+  try{const old=JSON.parse(localStorage.getItem(OLD_KEY)||'null');if(old){s.selectedGroup=old.selectedGroup||'A';s.exercises=old.exercises||{};}}
+  catch(e){}
+ }
+ return s;
+}
+const state=loadState();
 
-    function render() {
-      const g = groups[state.selectedGroup];
-      document.querySelectorAll('.group-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.group === state.selectedGroup));
-      const card = document.getElementById('groupCard');
-      card.innerHTML = `
-        <div class="section-head ${g.className}">
-          <div class="section-title">Group ${state.selectedGroup}</div>
-          <div class="section-focus">${g.focus}</div>
-        </div>
-        ${g.exercises.map((ex, idx) => {
-          const s = ensureExercise(ex);
-          return `
-            <div class="exercise" data-id="${ex.id}">
-              <h3>${idx + 1}. ${ex.name}</h3>
-              <div class="fields">
-                <label>Weight
-                  <input type="text" class="weight" value="${escapeHtml(s.weight)}" aria-label="${ex.name} weight" />
-                </label>
-                <label>Reps / Time
-                  <input type="text" class="reps" value="${escapeHtml(s.reps)}" aria-label="${ex.name} reps or time" />
-                </label>
-              </div>
-              <div class="sets">
-                ${[0,1,2].map(i => `
-                  <label class="set-check">
-                    <input type="checkbox" class="set" data-set="${i}" ${s.sets[i] ? 'checked' : ''} />
-                    <span>Set ${i+1}</span>
-                  </label>`).join('')}
-              </div>
-              <div class="cue">${ex.cue}</div>
-            </div>`;
-        }).join('')}
-        ${g.optional ? `<div class="optional">${g.optional}</div>` : ''}
-      `;
+function ensureExercise(ex){
+ if(!state.exercises[ex.id]) state.exercises[ex.id]={weight:ex.weight,reps:ex.reps,lastWeight:'',lastReps:'',lastChanged:''};
+ const x=state.exercises[ex.id];
+ if(Array.isArray(x.sets)){delete x.sets;}
+ return x;
+}
+function ensureDay(date=today){
+ if(!state.days[date]) state.days[date]={group:state.selectedGroup,sets:{},walkDone:false,walkTime:state.walk.time||'',walkDuration:state.walk.duration||'20 min',snapshots:{}};
+ return state.days[date];
+}
+function ensureDayExercise(ex,date=today){
+ const d=ensureDay(date);if(!d.sets[ex.id]) d.sets[ex.id]=[false,false,false];return d.sets[ex.id];
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));updateProgress();}
+function esc(str){return String(str??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function niceDate(date){return new Date(date+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});}
+function allExercises(){return Object.values(groups).flatMap(g=>g.exercises);}
 
-      card.querySelectorAll('.exercise').forEach(el => {
-        const id = el.dataset.id;
-        const exState = state.exercises[id];
-        el.querySelector('.weight').addEventListener('input', e => { exState.weight = e.target.value; save(); });
-        el.querySelector('.reps').addEventListener('input', e => { exState.reps = e.target.value; save(); });
-        el.querySelectorAll('.set').forEach(cb => {
-          cb.addEventListener('change', e => {
-            exState.sets[Number(e.target.dataset.set)] = e.target.checked;
-            save();
-          });
-        });
-      });
-      save();
-    }
+function renderToday(){
+ const g=groups[state.selectedGroup];const day=ensureDay();day.group=state.selectedGroup;
+ document.getElementById('dateLine').textContent=niceDate(today)+' · Pick one group and do it 3 times today.';
+ document.querySelectorAll('.group-btn').forEach(b=>b.classList.toggle('active',b.dataset.group===state.selectedGroup));
+ const card=document.getElementById('groupCard');
+ card.innerHTML=`<div class="section-head ${g.className}"><div class="section-title">Group ${state.selectedGroup}</div><div class="section-focus">${g.focus}</div></div>`+
+ g.exercises.map((ex,i)=>{const x=ensureExercise(ex),sets=ensureDayExercise(ex);const prev=x.lastWeight||x.lastReps?`Last used: <strong>${esc(x.lastWeight||'—')}</strong> · <strong>${esc(x.lastReps||'—')}</strong>${x.lastChanged?` · ${niceDate(x.lastChanged)}`:''}`:'No previous workout recorded yet.';
+ return `<div class="exercise" data-id="${ex.id}"><h3>${i+1}. ${ex.name}</h3><div class="last-used">${prev}</div><div class="fields"><label class="field">Weight<input type="text" class="weight" value="${esc(x.weight)}"></label><label class="field">Reps / Time<input type="text" class="reps" value="${esc(x.reps)}"></label></div><div class="sets">${[0,1,2].map(n=>`<label class="set-check"><input type="checkbox" class="set" data-set="${n}" ${sets[n]?'checked':''}><span>Set ${n+1}</span></label>`).join('')}</div><div class="cue">${ex.cue}</div></div>`}).join('')+(g.optional?`<div class="optional">${g.optional}</div>`:'');
 
-    function updateProgress() {
-      const g = groups[state.selectedGroup];
-      const total = g.exercises.length * 3;
-      const done = g.exercises.reduce((sum, ex) => sum + ensureExercise(ex).sets.filter(Boolean).length, 0);
-      document.getElementById('progress').innerHTML = `<strong>${done}/${total} sets complete</strong> for Group ${state.selectedGroup} today.`;
-    }
+ card.querySelectorAll('.exercise').forEach(el=>{
+  const id=el.dataset.id, ex=allExercises().find(e=>e.id===id), x=state.exercises[id], sets=ensureDayExercise(ex);
+  el.querySelector('.weight').addEventListener('change',e=>{if(e.target.value!==x.weight){x.lastWeight=x.weight;x.lastReps=x.reps;x.lastChanged=today;x.weight=e.target.value;save();renderToday();}});
+  el.querySelector('.reps').addEventListener('change',e=>{if(e.target.value!==x.reps){x.lastWeight=x.weight;x.lastReps=x.reps;x.lastChanged=today;x.reps=e.target.value;save();renderToday();}});
+  el.querySelectorAll('.set').forEach(cb=>cb.addEventListener('change',e=>{sets[Number(e.target.dataset.set)]=e.target.checked;recordSnapshot(ex);save();renderHistory();}));
+ });
+ const walk=ensureDay();document.getElementById('walkDone').checked=!!walk.walkDone;document.getElementById('walkTime').value=walk.walkTime||'';document.getElementById('walkDuration').value=walk.walkDuration||state.walk.duration||'20 min';
+ save();
+}
+function recordSnapshot(ex){const d=ensureDay(),x=ensureExercise(ex);d.snapshots[ex.id]={name:ex.name,weight:x.weight,reps:x.reps};if(d.sets[ex.id]?.some(Boolean)){x.lastWeight=x.weight;x.lastReps=x.reps;x.lastChanged=today;}}
+function updateProgress(){const g=groups[state.selectedGroup],d=ensureDay();const done=g.exercises.reduce((n,ex)=>n+ensureDayExercise(ex).filter(Boolean).length,0);const walk=d.walkDone?' · walk ✓':'';const el=document.getElementById('progress');if(el)el.innerHTML=`<strong>${done}/9 sets complete</strong> for Group ${state.selectedGroup}${walk}.`;}
 
-    function escapeHtml(str) {
-      return String(str ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-    }
+function renderHistory(){
+ const dates=Object.keys(state.days).sort().reverse();
+ const activeDays=dates.filter(date=>{const d=state.days[date];return Object.values(d.sets||{}).some(a=>a.some(Boolean))||d.walkDone;});
+ const completed=activeDays.filter(date=>Object.values(state.days[date].sets||{}).reduce((n,a)=>n+a.filter(Boolean).length,0)>=9).length;
+ const walks=activeDays.filter(date=>state.days[date].walkDone).length;
+ document.getElementById('historySummary').innerHTML=`<div class="metric"><strong>${activeDays.length}</strong><span>active days</span></div><div class="metric"><strong>${completed}</strong><span>9-set days</span></div><div class="metric"><strong>${walks}</strong><span>walks checked</span></div>`;
+ const list=document.getElementById('historyList');
+ if(!activeDays.length){list.innerHTML='<div class="empty">Your workout and walk history will appear here after you start checking things off.</div>';return;}
+ list.innerHTML=activeDays.map(date=>{const d=state.days[date],setCount=Object.values(d.sets||{}).reduce((n,a)=>n+a.filter(Boolean).length,0);const snaps=Object.values(d.snapshots||{}).filter(Boolean);return `<article class="history-day"><div class="history-head"><div class="history-date">${niceDate(date)}</div><div class="history-group">Group ${d.group||'—'}</div></div><div class="history-details"><strong>${setCount} sets</strong>${d.walkDone?' · Walk ✓':''}${d.walkTime?` · Walk target ${formatTime(d.walkTime)}`:''}${d.walkDuration?` · ${esc(d.walkDuration)}`:''}${snaps.length?'<br>'+snaps.map(s=>`${esc(s.name)}: ${esc(s.weight||'—')} · ${esc(s.reps||'—')}`).join('<br>'):''}</div></article>`}).join('');
+}
+function formatTime(v){if(!v)return'';const [h,m]=v.split(':').map(Number);return new Date(2000,0,1,h,m).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}
 
-    document.querySelectorAll('.group-btn').forEach(btn => {
-      btn.addEventListener('click', () => { state.selectedGroup = btn.dataset.group; save(); render(); });
-    });
+function switchView(name){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===name));document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(name+'View').classList.add('active');if(name==='history')renderHistory();}
 
-    document.getElementById('resetSets').addEventListener('click', () => {
-      groups[state.selectedGroup].exercises.forEach(ex => ensureExercise(ex).sets = [false,false,false]);
-      save(); render();
-    });
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
+document.querySelectorAll('.group-btn').forEach(b=>b.addEventListener('click',()=>{state.selectedGroup=b.dataset.group;ensureDay().group=state.selectedGroup;save();renderToday();}));
+document.getElementById('resetSets').addEventListener('click',()=>{groups[state.selectedGroup].exercises.forEach(ex=>ensureDayExercise(ex).splice(0,3,false,false,false));save();renderToday();renderHistory();});
+document.getElementById('nextGroup').addEventListener('click',()=>{const order=['A','B','C'];state.selectedGroup=order[(order.indexOf(state.selectedGroup)+1)%3];ensureDay().group=state.selectedGroup;save();renderToday();});
+document.getElementById('walkDone').addEventListener('change',e=>{ensureDay().walkDone=e.target.checked;save();renderHistory();});
+document.getElementById('walkTime').addEventListener('change',e=>{state.walk.time=e.target.value;ensureDay().walkTime=e.target.value;save();renderHistory();});
+document.getElementById('walkDuration').addEventListener('change',e=>{state.walk.duration=e.target.value;ensureDay().walkDuration=e.target.value;save();renderHistory();});
 
-    document.getElementById('nextGroup').addEventListener('click', () => {
-      const order = ['A','B','C'];
-      state.selectedGroup = order[(order.indexOf(state.selectedGroup)+1)%order.length];
-      save(); render();
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-    }
-
-    render();
-  </script>
+if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+renderToday();renderHistory();save();
+</script>
 </body>
 </html>
